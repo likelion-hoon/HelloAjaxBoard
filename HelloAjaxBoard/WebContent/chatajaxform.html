@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="http://code.jquery.com/jquery.js"></script>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<style>
+#msg {
+	background-color: lightblue;
+	width: 100%;
+	height: 200px;
+	overflow-y: auto;
+}
+</style>
+</head>
+<body>
+	<div id="msg"></div>
+	<input type="text" size="80" id="chat">
+</body>
+
+<script>
+	function refresh() {
+		$.ajax({
+			url : 'chatajax.jsp',
+			success : function(d) {
+				console.log(d); 
+				$("#msg").html(d);
+
+				// 스크롤 끌어오기 
+				var h = $("#msg").prop('scrollHeight');
+				$("#msg").scrollTop(h);
+			}
+		});
+	}
+
+	ajax('chatajax.jsp', function(d) {
+		$("msg").html(d);
+	});
+
+	// ajax함수 정의
+	function ajax(q, f) {
+		$.ajax({
+			url : encodeURI(q),
+			success : f,
+			error : function() {
+				alert('error~~~'); 
+			}
+		});
+	}
+
+	setInterval(function() {
+		// 채팅메시지를 끌어와야 한다.
+		// ajax : chatajax.jsp 호출 
+		// success : server 리턴 div 표시 
+		// ajax : 내용을 동적으로 가져와서 동적인 부분에만 표시
+
+		$.ajax({ // 내부적으로 스레드로 돌아간다.
+			url : 'chatajax.jsp',
+			// url이 성공했을때 함수 실행 
+			// result는 서버에서 리턴 받는 변수
+			// dataType : 'json' -> chatajax2문제 해결
+			success : function(data) {
+				// alert(result); 
+				$("#msg").html(data);
+			}
+		}); // ajax 코드 끝
+	}, 3000);
+
+	// 엔터키를 눌렀을때
+	$("#chat").keypress(function(e) {
+		if (e.which == 13) {
+			var q = 'chatajax.jsp?chat=' + $("#chat").val();
+			
+			// ajax호출
+			ajax(q, function(d) {
+				$("#chat").val("");
+				$("#chat").focus();
+				refresh();
+			});
+		}
+	});
+</script>
+</html>
